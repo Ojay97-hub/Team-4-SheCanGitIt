@@ -1,8 +1,11 @@
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Website to help women in tech and coding industry to imrpove their skills and knowledge">
+  <meta name="keywords" content="women,coding, tech, empowerment, mentorship, community">
   <title>{% block title %}SheGitsIt{% endblock %}</title>
 
   <!-- Tailwind CSS CDN -->
@@ -41,7 +44,7 @@
 
     <!-- Mobile Toggle (right, only shown on small screens) -->
     <div class="md:hidden">
-      <button id="menu-toggle" class="md:hidden win-button px-2 py-1 text-xs" onclick="document.getElementById('mobile-menu').classList.toggle('hidden');">
+      <button id="menu-toggle" class="md:hidden win-button px-2 py-1 text-xs">
         ☰
       </button>
     </div>
@@ -51,8 +54,11 @@
       <a href="{% url 'retro_computer' %}" class="win-button px-2 py-1 text-xs md:text-sm hover:bg-retro-highlight">HerStory</a>
       <a href="{% url 'hermentor_redirect' %}" class="win-button px-2 py-1 text-xs md:text-sm hover:bg-retro-highlight">HerMentor</a>
       <a href="{% url 'tech_list' %}" class="win-button px-2 py-1 text-xs md:text-sm hover:bg-retro-highlight">HerBuddies</a>
-      <a href="{% url 'chat' %}" class="win-button px-2 py-1 text-xs md:text-sm hover:bg-retro-highlight">Chat</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'chat' %}" class="win-button px-2 py-1 text-xs md:text-sm hover:bg-retro-highlight">Chat</a>
+      {% endif %}
       <a href="{% url 'affirmation' %}" class="win-button px-2 py-1 text-xs md:text-sm hover:bg-retro-highlight">Affirmations</a>
+      <a href="{% url 'retro_editor:editor_home' %}" class="win-button px-2 py-1 text-xs md:text-sm hover:bg-retro-highlight">Retro Editor</a>
       <a href="{% url 'about' %}" class="win-button px-2 py-1 text-xs md:text-sm hover:bg-retro-highlight">About</a>
     </nav>
 
@@ -77,28 +83,38 @@
         </div>
       </div>
       <!-- Notifications -->
-      <div class="relative">
-        <button id="notif-toggle" class="win-button p-2 inline-flex relative">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-          </svg>
-          {% if unread_notifications %}
-          <span class="absolute top-0 right-0 -mt-1 -mr-1 bg-red-600 text-white text-xs font-bold rounded-full px-1">
-            {{ unread_notifications.count }}
-          </span>
-          {% endif %}
-        </button>
+      {% if '/mentor/' in request.path %}
+        <div class="relative">
+          <button id="notif-toggle" class="win-button p-2 inline-flex relative">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            {% if unread_notifications %}
+            <span class="absolute top-0 right-0 -mt-1 -mr-1 bg-red-600 text-white text-xs font-bold rounded-full px-1">
+              {{ unread_notifications.count }}
+            </span>
+            {% endif %}
+          </button>
 
-        {% if unread_notifications %}
-        <div id="notif-panel" class="hidden absolute right-0 mt-2 w-64 bg-white border border-retro-dark rounded shadow-md z-50 p-3 font-retro">
-          <p class="font-bold mb-2 text-sm text-retro-dark">🔔 Notifications</p>
-          <ul class="space-y-2 text-sm text-retro-dark">
-            {% for note in unread_notifications %}
-              <li class="border-b pb-1">{{ note.message }}</li>
-            {% endfor %}
-          </ul>
-        </div>
+        
+          <div id="notif-panel"
+            class="hidden absolute right-0 mt-2 w-64 bg-white border border-retro-dark rounded shadow-md z-50 p-3 font-retro">
+            <p class="font-bold mb-2 text-sm text-retro-dark">🔔 Notifications</p>
+            {% if unread_notifications %}
+            <ul class="space-y-2 text-sm text-retro-dark">
+              {% for note in unread_notifications %}
+              <button type="button"
+                class="block text-left w-full border-b pb-1 unread-note hover:bg-gray-100 cursor-pointer text-sm"
+                data-id="{{ note.id }}">
+                {{ note.message }}
+              </button>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-sm text-gray-500 italic">No new notifications</p>
+            {% endif %}
+          </div>
         {% endif %}
       </div>
       {% else %}
@@ -114,9 +130,11 @@
       <a href="{% url 'retro_computer' %}" class="win-button text-xs px-2 py-1">HerStory</a>
       <a href="{% url 'hermentor_redirect' %}" class="win-button text-xs px-2 py-1">HerMentor</a>
       <a href="{% url 'tech_list' %}" class="win-button text-xs px-2 py-1">HerBuddies</a>
-      <a href="#" class="win-button text-xs px-2 py-1">Chat</a>
+      <a href="{% url 'chat' %}" class="win-button text-xs px-2 py-1">Chat</a>
       <a href="{% url 'affirmation' %}" class="win-button text-xs px-2 py-1">Affirmations</a>
-      <a href="{% url 'about' %}" class="win-button px-2 py-1">About</a>
+      <a href="{% url 'retro_editor:editor_home' %}" class="win-button text-xs px-2 py-1">Retro Editor</a>
+      <a href="{% url 'about' %}" class="win-button text-xs px-2 py-1">About</a>
+      
 
       {% if user.is_authenticated %}
         <a href="{% url 'user_profile' %}" class="win-button text-xs px-2 py-1">My Profile</a>
@@ -160,38 +178,11 @@
     </div>
   </footer>
 
+  <script src="{% static 'js/navbar.js' %}"></script>
+  <script src="{% static 'js/notifications.js' %}"></script>
+
   {% block extra_js %}
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const menuToggle = document.getElementById("menu-toggle");
-      
-      if (menuToggle) {
-        menuToggle.addEventListener("click", function() {
-          console.log("Menu button clicked");
-          const menu = document.getElementById("mobile-menu");
-          menu.classList.toggle("hidden");
-        });
-      } else {
-        console.error("Menu toggle button not found");
-      }
 
-    // Notification bell dropdown toggle (if added)
-    const toggleBtn = document.getElementById("notif-toggle");
-    const panel = document.getElementById("notif-panel");
-
-    if (toggleBtn && panel) {
-      toggleBtn.addEventListener("click", () => {
-        panel.classList.toggle("hidden");
-      });
-
-      // Optional: close if clicked outside
-      document.addEventListener("click", function (e) {
-        if (!toggleBtn.contains(e.target) && !panel.contains(e.target)) {
-          panel.classList.add("hidden");
-        }
-      });
-    }
-  </script>
   {% endblock %}
 
 </body>
